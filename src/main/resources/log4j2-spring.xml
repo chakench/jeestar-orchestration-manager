@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration scan="true" scanPeriod="120 seconds">
+
+    <property name="log.base" value="logs"/>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss:SSS} %highlight(%-5level) ---- [%15.15t] %cyan(%logger{96})  : %msg%n
+            </pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="INSTANCE_LOG" class="org.jipaas.orchestration.service.infra.log.appender.InstanceLogAppender">
+        <filter class="org.jipaas.orchestration.service.infra.log.filter.InstanceLogFilter"/>
+        <pattern>
+            %d{yyyy-MM-dd HH:mm:ss:SSS} %-5level---- [%15.15t] %logger{18}  : %msg%n
+        </pattern>
+        <charset>UTF-8</charset>
+    </appender>
+
+    <appender name="INSTANCE_LOG_FILE" class="ch.qos.logback.classic.sift.SiftingAppender">
+        <filter class="org.jipaas.orchestration.service.infra.log.filter.InstanceFileLogFilter">
+            <!--保持和hzero.orchestration.task-log-store-type配置一样-->
+            <logStorageType>DB</logStorageType>
+        </filter>
+        <Discriminator class="org.jipaas.orchestration.service.infra.log.filter.InstanceLogDiscriminator">
+            <key>instanceAppId</key>
+            <logBase>${log.base}</logBase>
+        </Discriminator>
+        <sift>
+            <appender name="FILE-${instanceAppId}" class="ch.qos.logback.core.FileAppender">
+                <file>${log.base}/${instanceAppId}.log</file>
+                <encoder>
+                    <pattern>
+                        %d{yyyy-MM-dd HH:mm:ss:SSS} %-5level---- [%15.15t] %logger{18}  : %msg%n
+                    </pattern>
+                    <charset>UTF-8</charset>
+                </encoder>
+                <append>true</append>
+            </appender>
+        </sift>
+    </appender>
+
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="INSTANCE_LOG"/>
+        <appender-ref ref="INSTANCE_LOG_FILE"/>
+    </root>
+
+</configuration>
